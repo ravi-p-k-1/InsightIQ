@@ -43,7 +43,6 @@ function App() {
               title={card.title}
               seriesId={card.seriesId}
               units={card.units}
-              unitsShort={card.unitsShort}
               observations={card.observations}
               insight={card.insight}
             />

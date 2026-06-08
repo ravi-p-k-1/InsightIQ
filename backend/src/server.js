@@ -57,12 +57,23 @@ app.post('/api/insights', async (request, response) => {
   }
 
   if (selectedSeries.length === 0) {
-    response.status(400).json({ error: 'At least one FRED series is required.' })
+    response.status(400).json({
+      error:
+        'At least one valid FRED series is required. Series IDs must be 1 to 25 alphanumeric characters.',
+    })
     return
   }
 
   try {
     const seriesWithObservations = await getFredSeriesWithObservations(selectedSeries)
+
+    if (seriesWithObservations.length === 0) {
+      response.status(404).json({
+        error: 'None of the requested FRED series could be found.',
+      })
+      return
+    }
+
     const series = await getInsightsForFredSeries(query, seriesWithObservations)
 
     response.json({

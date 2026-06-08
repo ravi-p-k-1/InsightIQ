@@ -31,6 +31,6 @@ Backend endpoints:
 - `POST /api/series-ids` with `{ "query": "..." }`
 - `POST /api/insights` with `{ "query": "...", "series": [{ "seriesId": "...", "title": "..." }] }`
 
-The `/api/insights` response includes `series`; each returned series item contains its own `units`, `unitsShort`, `observations`, and `insight`.
+The `/api/insights` response includes `series`; each returned series item contains its own `units`, annual `observations`, and `insight`.
 
 Set `GEMINI_API_KEY` and `FRED_API_KEY` in `backend/.env` before calling `/api/insights`.

@@ -7,6 +7,7 @@ export function normalizeObservation(observation) {
 
   return {
     date: observation.date,
+    year: observation.date.slice(0, 4),
     value,
   }
 }
@@ -15,6 +16,5 @@ export function normalizeSeriesMetadata(series) {
   return {
     title: series.title ? String(series.title) : undefined,
     units: series.units ? String(series.units) : '',
-    unitsShort: series.units_short ? String(series.units_short) : '',
   }
 }

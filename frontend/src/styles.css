@@ -158,56 +158,30 @@ input {
 }
 
 .chart-box__canvas {
-  display: grid;
   min-height: 210px;
-  place-items: center;
   border: 1px solid #d7dce2;
   border-radius: 8px;
+  padding: 8px;
   background: #f9fafb;
   color: #7b8491;
 }
 
-.chart-box__canvas div {
-  display: grid;
-  gap: 8px;
-  text-align: center;
-}
-
-.chart-box__canvas strong {
-  color: #172026;
-  font-size: 2.25rem;
-  line-height: 1;
-}
-
-.chart-box__canvas small {
-  color: #66717f;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.chart-box__table {
+.line-chart {
   width: 100%;
-  margin: 14px 0 0;
-  border-collapse: collapse;
-  color: #66717f;
-  font-size: 0.9rem;
+  height: 230px;
 }
 
-.chart-box__table th,
-.chart-box__table td {
-  border-bottom: 1px solid #edf0f3;
-  padding: 8px 0;
-  text-align: left;
-}
-
-.chart-box__table th:last-child,
-.chart-box__table td:last-child {
-  text-align: right;
-}
-
-.chart-box__table th {
+.chart-box__latest {
+  margin: 12px 0 0;
   color: #344054;
+  font-size: 0.92rem;
   font-weight: 600;
+}
+
+.chart-box__canvas > span {
+  display: grid;
+  min-height: 210px;
+  place-items: center;
 }
 
 .chart-box__insight {

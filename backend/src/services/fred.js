@@ -6,6 +6,7 @@ import {
 
 const fredApiBaseUrl = 'https://api.stlouisfed.org/fred'
 const recentObservationLimit = 24
+const defaultFrequency = 'a'
 
 export async function getFredSeriesMetadata(seriesId) {
   const url = new URL(`${fredApiBaseUrl}/series`)
@@ -32,6 +33,7 @@ export async function getFredObservations(seriesId, options = {}) {
   url.searchParams.set('api_key', getRequiredEnv('FRED_API_KEY'))
   url.searchParams.set('file_type', 'json')
   url.searchParams.set('series_id', seriesId)
+  url.searchParams.set('frequency', options.frequency ?? defaultFrequency)
   url.searchParams.set('sort_order', 'desc')
   url.searchParams.set(
     'limit',
@@ -56,7 +58,7 @@ export async function getFredObservations(seriesId, options = {}) {
 }
 
 export async function getFredSeriesWithObservations(series) {
-  return Promise.all(
+  const results = await Promise.allSettled(
     series.map(async (item) => {
       const [metadata, observations] = await Promise.all([
         getFredSeriesMetadata(item.seriesId),
@@ -67,9 +69,12 @@ export async function getFredSeriesWithObservations(series) {
         ...item,
         title: metadata.title ?? item.title,
         units: metadata.units,
-        unitsShort: metadata.unitsShort,
         observations,
       }
     }),
   )
+
+  return results
+    .filter((result) => result.status === 'fulfilled')
+    .map((result) => result.value)
 }

@@ -1,3 +1,5 @@
+import LineChart from './LineChart'
+
 function formatValue(value) {
   return new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 2,
@@ -8,13 +10,11 @@ function ChartBox({
   title,
   seriesId,
   units,
-  unitsShort,
   observations = [],
   insight,
 }) {
   const latestObservation = observations.at(-1)
-  const recentObservations = observations.slice(-5).reverse()
-  const displayUnits = unitsShort || units
+  const displayUnits = units
 
   return (
     <section className="chart-box">
@@ -23,33 +23,17 @@ function ChartBox({
         <span>{seriesId}</span>
       </div>
       <div className="chart-box__canvas" aria-label={`${title} latest value`}>
-        {latestObservation ? (
-          <div>
-            <span>{latestObservation.date}</span>
-            <strong>{formatValue(latestObservation.value)}</strong>
-            {displayUnits && <small>{displayUnits}</small>}
-          </div>
-        ) : (
-          <span>No observations returned</span>
-        )}
+        <LineChart
+          data={observations}
+          units={displayUnits}
+          ariaLabel={`${title} chart`}
+        />
       </div>
-      {recentObservations.length > 0 && (
-        <table className="chart-box__table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>{displayUnits ? `Value (${displayUnits})` : 'Value'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentObservations.map((observation) => (
-              <tr key={observation.date}>
-                <td>{observation.date}</td>
-                <td>{formatValue(observation.value)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {latestObservation && (
+        <p className="chart-box__latest">
+          Latest: {latestObservation.year} - {formatValue(latestObservation.value)}
+          {displayUnits ? ` ${displayUnits}` : ''}
+        </p>
       )}
       {insight && (
         <div className="chart-box__insight">

@@ -4,7 +4,7 @@ function AppHeader() {
   return (
     <header className="app-header">
       <NavLink className="app-header__brand" to="/">
-        Economic Insight Assistant
+        InsightIQ
       </NavLink>
       <nav className="app-header__nav" aria-label="Primary navigation">
         <NavLink to="/">Dashboard</NavLink>

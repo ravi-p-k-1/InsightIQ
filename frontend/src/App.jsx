@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ChartBox from './components/ChartBox'
 import PromptSearchBar from './components/PromptSearchBar'
-import { getFredSeriesForQuery } from './services/geminiFred'
+import { getFredSeriesForQuery, getInsightsForSeries } from './services/insights'
 
 function App() {
   const [series, setSeries] = useState([])
@@ -14,14 +14,9 @@ function App() {
     setSeries([])
 
     try {
-      const fredSeries = await getFredSeriesForQuery(query)
-      setSeries(
-        fredSeries.map((item) => ({
-          title: item.title,
-          description: item.reason,
-          seriesId: item.seriesId,
-        })),
-      )
+      const selectedSeries = await getFredSeriesForQuery(query)
+      const result = await getInsightsForSeries(query, selectedSeries)
+      setSeries(result.series)
     } catch (currentError) {
       setError(currentError.message)
     } finally {
@@ -46,11 +41,11 @@ function App() {
             <ChartBox
               key={card.seriesId ?? card.title}
               title={card.title}
-              description={
-                card.seriesId
-                  ? `${card.seriesId}: ${card.description}`
-                  : card.description
-              }
+              seriesId={card.seriesId}
+              units={card.units}
+              unitsShort={card.unitsShort}
+              observations={card.observations}
+              insight={card.insight}
             />
           ))}
         </section>

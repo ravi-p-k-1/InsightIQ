@@ -1,3 +1,5 @@
+![InsightIQ](frontend/insightiq-image.png)
+
 # InsightIQ: Economy Insight Assistant
 
 InsightIQ: Economy Insight Assistant is a React and Node app for generating dashboard-ready economic insights from FRED data.

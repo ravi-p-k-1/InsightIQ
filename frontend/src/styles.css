@@ -35,15 +35,22 @@ a {
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid #dfe4ea;
-  padding: 16px max(16px, calc((100% - 1180px) / 2));
+  padding: 8px max(16px, calc((100% - 1180px) / 2));
   background: #ffffff;
 }
 
 .app-header__brand {
-  color: #111827;
-  font-size: 1rem;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
+}
+
+.app-header__brand img {
+  display: block;
+  width: 190px;
+  max-width: 48vw;
+  height: auto;
+  border-radius: 6px;
 }
 
 .app-header__nav {

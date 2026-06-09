@@ -32,7 +32,7 @@ function DashboardPage() {
   return (
     <>
       <header className="dashboard__header">
-        <h1>InsightIQ</h1>
+        <h1>InsightIQ: Economy Insight Assistant</h1>
         <p>Enter a query to generate dashboard-ready economic insight modules.</p>
       </header>
 

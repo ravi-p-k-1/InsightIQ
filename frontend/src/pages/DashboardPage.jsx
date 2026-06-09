@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import PromptSearchBar from '../components/PromptSearchBar'
 import ResultsGrid from '../components/ResultsGrid'
 import { getFredSeriesForQuery, getInsightsForSeries } from '../services/insights'
@@ -9,7 +8,6 @@ function DashboardPage() {
   const [series, setSeries] = useState([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
 
   async function handlePromptSubmit(query) {
     setIsLoading(true)
@@ -20,8 +18,7 @@ function DashboardPage() {
       const selectedSeries = await getFredSeriesForQuery(query)
       const result = await getInsightsForSeries(query, selectedSeries)
       setSeries(result.series)
-      const historyItem = saveHistoryItem(query, result)
-      navigate(`/history/${historyItem.id}`)
+      saveHistoryItem(query, result)
     } catch (currentError) {
       setError(currentError.message)
     } finally {

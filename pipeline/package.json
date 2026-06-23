@@ -1,0 +1,13 @@
+{
+  "name": "insightiq-data-pipeline",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "fetch:fred": "node --env-file=.env scripts/fetchFredCatalog.js",
+    "count:fred": "node --env-file=.env scripts/fetchFredCatalog.js --count-only"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

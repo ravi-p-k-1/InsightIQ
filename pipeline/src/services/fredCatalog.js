@@ -3,6 +3,11 @@ import {
   fredPageSize,
 } from '../config/fred.js'
 import { fetchFredJson } from '../clients/fred.js'
+import {
+  normalizeFredSeriesForDatabase,
+  upsertFredSeriesBatch,
+} from './fredSeriesRepository.js'
+import { setupFredSeriesTable } from './fredSeriesTable.js'
 
 async function fetchScopePage(scope, offset, limit = fredPageSize) {
   return fetchFredJson('tags/series', {
@@ -71,31 +76,36 @@ export async function getFredScopeCounts() {
   return counts
 }
 
-async function fetchScope(scope, seriesById) {
+async function syncScopeToDatabase(client, scope, options) {
   let offset = 0
   let expectedCount = null
   let fetchedCount = 0
+  const limit = options.limit ?? null
 
   while (expectedCount === null || offset < expectedCount) {
-    const data = await fetchScopePage(scope, offset)
+    const remainingLimit = limit === null ? fredPageSize : limit - fetchedCount
+
+    if (remainingLimit <= 0) {
+      break
+    }
+
+    const data = await fetchScopePage(
+      scope,
+      offset,
+      Math.min(fredPageSize, remainingLimit),
+    )
     const page = Array.isArray(data.seriess) ? data.seriess : []
     expectedCount = Number(data.count) || 0
 
-    for (const series of page) {
-      const normalized = normalizeSeries(series, scope.id)
-      const existing = seriesById.get(normalized.seriesId)
-
-      if (existing) {
-        existing.scopes = [...new Set([...existing.scopes, scope.id])]
-      } else {
-        seriesById.set(normalized.seriesId, normalized)
-      }
-    }
+    const normalizedPage = page.map((series) =>
+      normalizeFredSeriesForDatabase(normalizeSeries(series, scope.id)),
+    )
+    await upsertFredSeriesBatch(client, normalizedPage)
 
     offset += page.length
     fetchedCount += page.length
     console.log(
-      `${scope.id}: fetched ${Math.min(offset, expectedCount)}/${expectedCount}`,
+      `${scope.id}: synced ${Math.min(offset, expectedCount)}/${expectedCount}`,
     )
 
     if (page.length === 0) {
@@ -111,16 +121,17 @@ async function fetchScope(scope, seriesById) {
   return fetchedCount
 }
 
-export async function fetchFredCatalog() {
-  const seriesById = new Map()
+export async function syncFredCatalogToDatabase(client, options = {}) {
   const fetchedScopeCounts = {}
+  await setupFredSeriesTable(client)
 
   for (const scope of fredCatalogScopes) {
-    fetchedScopeCounts[scope.id] = await fetchScope(scope, seriesById)
+    fetchedScopeCounts[scope.id] = await syncScopeToDatabase(
+      client,
+      scope,
+      options,
+    )
   }
 
-  return {
-    seriesById,
-    fetchedScopeCounts,
-  }
+  return { fetchedScopeCounts }
 }

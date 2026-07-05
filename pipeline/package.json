@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "fetch:fred": "node --env-file=.env scripts/fetchFredCatalog.js",
-    "count:fred": "node --env-file=.env scripts/fetchFredCatalog.js --count-only"
+    "db:setup": "node --env-file=.env scripts/setupDatabase.js",
+    "db:sync:fred": "node --env-file=.env scripts/syncFredSeries.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
   },
   "engines": {
     "node": ">=20"

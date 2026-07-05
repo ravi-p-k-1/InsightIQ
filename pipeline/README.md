@@ -9,8 +9,7 @@ separate from the backend API because catalog generation can be long-running.
 - `src/clients/`: External API clients, retries, and request throttling.
 - `src/services/`: Catalog retrieval and transformation workflows.
 - `src/config/`: FRED scopes and pipeline constants.
-- `src/utils/`: Environment, paths, rate limiting, and file output helpers.
-- `data/`: Generated pipeline output, excluded from Git.
+- `src/utils/`: Environment and rate limiting helpers.
 
 ## Setup
 
@@ -19,12 +18,41 @@ Create `pipeline/.env` from `pipeline/.env.template`:
 ```bash
 FRED_API_KEY=your_fred_api_key_here
 FRED_REQUESTS_PER_MINUTE=60
+DATABASE_URL=postgres://insightiq:insightiq@localhost:15432/insightiq_vector
 ```
 
 `FRED_REQUESTS_PER_MINUTE` controls the maximum request start rate. Requests
 are evenly spaced to avoid bursts, and retries use the same scheduler. The
 default of 60 is intentionally conservative because FRED does not document one
 universal public RPM quota.
+
+## Local Vector Database
+
+The pipeline uses Docker Compose to run a local PostgreSQL database with the
+pgvector extension available:
+
+```bash
+cd pipeline
+docker compose up -d
+```
+
+Connection string:
+
+```bash
+postgres://insightiq:insightiq@localhost:15432/insightiq_vector
+```
+
+Stop the database without deleting stored data:
+
+```bash
+docker compose down
+```
+
+Delete the database volume and start fresh:
+
+```bash
+docker compose down -v
+```
 
 ## FRED National and State Catalog
 
@@ -35,31 +63,25 @@ The FRED catalog script retrieves all series matching these tag combinations:
 
 It verifies that FRED currently exposes the `nation` and `state` geography-type
 tags, follows FRED's 1,000-record pagination limit, retries transient failures,
-deduplicates series IDs, and stores complete series metadata as JSON Lines.
+and upserts complete series metadata directly into Postgres.
 
-Check the counts without downloading all records:
+## Sync FRED Series Directly to Postgres
 
-```bash
-cd pipeline
-npm run count:fred
-```
-
-Fetch and store the catalog:
+Once Postgres is available, the preferred path is to fetch FRED pages and upsert
+them directly into the `fred_series` table:
 
 ```bash
 cd pipeline
-npm run fetch:fred
+docker compose up -d
+npm run db:sync:fred
 ```
 
-Both commands load configuration from `pipeline/.env`.
+For a quick API-to-database test, pass a per-scope limit:
 
-Generated files:
+```bash
+npm run db:sync:fred -- --limit 1000
+```
 
-- `data/fred/national-state-series.jsonl`
-- `data/fred/national-state-summary.json`
-
-The summary distinguishes counts advertised by FRED from rows actually
-returned through pagination. These can differ if FRED's result count changes or
-the endpoint stops returning rows before the advertised offset.
-
-The generated `pipeline/data/` directory is intentionally excluded from Git.
+The sync stores series metadata and an `embedding_text` field that will be used
+by the next embedding job. The `embedding` column remains empty until the
+embedding script is run.

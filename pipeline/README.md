@@ -19,6 +19,7 @@ Create `pipeline/.env` from `pipeline/.env.template`:
 FRED_API_KEY=your_fred_api_key_here
 FRED_REQUESTS_PER_MINUTE=60
 DATABASE_URL=postgres://insightiq:insightiq@localhost:15432/insightiq_vector
+EMBEDDING_MODEL=Xenova/bge-small-en-v1.5
 ```
 
 `FRED_REQUESTS_PER_MINUTE` controls the maximum request start rate. Requests
@@ -85,3 +86,16 @@ npm run db:sync:fred -- --limit 1000
 The sync stores series metadata and an `embedding_text` field that will be used
 by the next embedding job. The `embedding` column remains empty until the
 embedding script is run.
+
+## Embed FRED Series
+
+Generate local embeddings from `fred_series.embedding_text` using Transformers.js
+and the configured Xenova model:
+
+```bash
+cd pipeline
+npm run db:embed:fred -- --limit 100
+```
+
+The default model is `Xenova/bge-small-en-v1.5`, which produces 384-dimensional
+vectors matching the `fred_series.embedding vector(384)` column.

@@ -118,3 +118,34 @@ export async function upsertFredSeriesBatch(client, seriesBatch) {
 
   return seriesBatch.length;
 }
+
+export async function getFredSeriesNeedingEmbeddings(client, limit) {
+  const { rows } = await client.query(
+    `
+      SELECT series_id, embedding_text
+      FROM fred_series
+      WHERE embedding IS NULL
+        AND embedding_text IS NOT NULL
+        AND embedding_text <> ''
+      ORDER BY popularity DESC NULLS LAST, series_id ASC
+      LIMIT $1
+    `,
+    [limit],
+  );
+
+  return rows;
+}
+
+export async function updateFredSeriesEmbedding(client, seriesId, embedding) {
+  const vector = `[${embedding.join(',')}]`;
+
+  await client.query(
+    `
+      UPDATE fred_series
+      SET embedding = $2::vector,
+          updated_at = now()
+      WHERE series_id = $1
+    `,
+    [seriesId, vector],
+  );
+}

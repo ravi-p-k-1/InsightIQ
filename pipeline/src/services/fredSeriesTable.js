@@ -36,6 +36,31 @@ export async function setupFredSeriesTable(client) {
   `);
 }
 
+export async function createFredSeriesEmbeddingIndex(client) {
+  await client.query(`
+    CREATE INDEX IF NOT EXISTS fred_series_embedding_hnsw_idx
+    ON fred_series
+    USING hnsw (embedding vector_cosine_ops)
+    WHERE embedding IS NOT NULL
+  `);
+
+  await client.query('ANALYZE fred_series');
+}
+
+export async function getFredSeriesIndexStats(client) {
+  const { rows } = await client.query(`
+    SELECT
+      indexname,
+      indexdef
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND tablename = 'fred_series'
+    ORDER BY indexname
+  `);
+
+  return rows;
+}
+
 export async function getFredSeriesTableStats(client) {
   const { rows } = await client.query(`
     SELECT

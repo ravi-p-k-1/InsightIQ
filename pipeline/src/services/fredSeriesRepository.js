@@ -149,3 +149,32 @@ export async function updateFredSeriesEmbedding(client, seriesId, embedding) {
     [seriesId, vector],
   );
 }
+
+export async function searchFredSeriesByEmbedding(client, embedding, limit) {
+  const vector = `[${embedding.join(',')}]`;
+  const { rows } = await client.query(
+    `
+      SELECT
+        series_id,
+        title,
+        units,
+        frequency,
+        seasonal_adjustment,
+        observation_start,
+        observation_end,
+        popularity,
+        scopes,
+        embedding <=> $1::vector AS distance
+      FROM fred_series
+      WHERE embedding IS NOT NULL
+      ORDER BY embedding <=> $1::vector
+      LIMIT $2
+    `,
+    [vector, limit],
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    similarity: 1 - Number(row.distance),
+  }));
+}

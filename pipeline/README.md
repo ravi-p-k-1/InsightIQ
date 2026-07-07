@@ -99,3 +99,30 @@ npm run db:embed:fred -- --limit 100
 
 The default model is `Xenova/bge-small-en-v1.5`, which produces 384-dimensional
 vectors matching the `fred_series.embedding vector(384)` column.
+
+## Index FRED Embeddings
+
+After embeddings are generated, create the pgvector HNSW index:
+
+```bash
+cd pipeline
+npm run db:index:fred
+```
+
+This speeds up vector search over the `fred_series.embedding` column.
+
+## Search FRED Series
+
+Search embedded FRED series with the same local embedding model and pgvector
+cosine distance:
+
+```bash
+cd pipeline
+npm run db:search:fred -- "inflation and unemployment since 2020"
+```
+
+Pass a custom result count with `--limit`:
+
+```bash
+npm run db:search:fred -- --limit 20 "housing prices in California"
+```

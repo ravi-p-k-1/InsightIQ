@@ -5,6 +5,7 @@ import { searchFredSeries } from '../src/services/fredSeriesSearch.js';
 function parseSearchArgs() {
   const args = process.argv.slice(2);
   let limit = 10;
+  let sawLimitOption = false;
   const queryParts = [];
 
   for (let index = 0; index < args.length; index += 1) {
@@ -18,13 +19,26 @@ function parseSearchArgs() {
       }
 
       limit = value;
+      sawLimitOption = true;
       index += 1;
+    } else if (arg.startsWith('--limit=')) {
+      throw new Error('Use "--limit 5" instead of "--limit=5".');
+    } else if (arg.startsWith('-')) {
+      throw new Error(`Unsupported option "${arg}". Only "--limit 5" is supported.`);
     } else {
       queryParts.push(arg);
     }
   }
 
   const query = queryParts.join(' ').trim();
+
+  if (!sawLimitOption && queryParts.length > 1 && /^\d+$/.test(queryParts[0])) {
+    throw new Error(
+      `Did you mean "--limit ${queryParts[0]}"? Example: npm run db:search:fred -- --limit ${queryParts[0]} "${queryParts
+        .slice(1)
+        .join(' ')}"`,
+    );
+  }
 
   if (!query) {
     throw new Error(

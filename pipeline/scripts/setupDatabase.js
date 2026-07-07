@@ -10,6 +10,7 @@ await withDatabaseClient(async (client) => {
 
   console.log('Database schema is ready.');
   console.log(`Total FRED series: ${stats.total_series}`);
+  console.log(`Tagged FRED series: ${stats.tagged_series}`);
   console.log(`Embedded FRED series: ${stats.embedded_series}`);
   console.log(`National series: ${stats.national_series}`);
   console.log(`State series: ${stats.state_series}`);

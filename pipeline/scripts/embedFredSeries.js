@@ -21,15 +21,18 @@ function parsePositiveIntegerOption(name, fallback) {
 
 const limit = parsePositiveIntegerOption('--limit', 100);
 const batchSize = parsePositiveIntegerOption('--batch-size', 25);
+const taggedOnly = process.argv.includes('--tagged-only');
 
 console.log(`Embedding model: ${getConfiguredEmbeddingModel()}`);
 console.log(`Embedding limit: ${limit.toLocaleString()}`);
 console.log(`Embedding batch size: ${batchSize.toLocaleString()}`);
+console.log(`Tagged only: ${taggedOnly ? 'yes' : 'no'}`);
 
 await withDatabaseClient(async (client) => {
   const { embeddedCount } = await embedFredSeries(client, {
     limit,
     batchSize,
+    taggedOnly,
   });
   const stats = await getFredSeriesTableStats(client);
 

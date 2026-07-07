@@ -6,6 +6,8 @@
   "scripts": {
     "db:setup": "node --env-file=.env scripts/setupDatabase.js",
     "db:sync:fred": "node --env-file=.env scripts/syncFredSeries.js",
+    "db:sync:fred-tags": "node --env-file=.env scripts/syncFredSeriesTags.js",
+    "db:prepare:tagged-embeddings": "node --env-file=.env scripts/prepareTaggedEmbeddings.js",
     "db:embed:fred": "node --env-file=.env scripts/embedFredSeries.js",
     "db:search:fred": "node --env-file=.env scripts/searchFredSeries.js",
     "db:index:fred": "node --env-file=.env scripts/indexFredSeries.js"

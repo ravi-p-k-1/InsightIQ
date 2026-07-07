@@ -87,6 +87,31 @@ The sync stores series metadata and an `embedding_text` field that will be used
 by the next embedding job. The `embedding` column remains empty until the
 embedding script is run.
 
+## Sync FRED Series Tags
+
+Fetch official FRED tags for series rows and store them in `fred_series.tags`,
+`fred_series.tag_names`, and `fred_series.tag_group_ids`:
+
+```bash
+cd pipeline
+npm run db:sync:fred-tags -- --limit 100
+```
+
+The command is resumable. It fetches rows where `tags_updated_at` is empty,
+ordered by popularity, and respects `FRED_REQUESTS_PER_MINUTE`.
+
+To test tag-enriched embeddings on only the tagged subset, prepare the table and
+then run tagged-only embedding:
+
+```bash
+npm run db:prepare:tagged-embeddings
+npm run db:embed:fred -- --tagged-only --limit 5000
+```
+
+The preparation command clears embeddings for untagged rows and rebuilds
+`embedding_text` for tagged rows using series ID, title, tags, units, frequency,
+seasonal adjustment, and scope.
+
 ## Embed FRED Series
 
 Generate local embeddings from `fred_series.embedding_text` using Transformers.js

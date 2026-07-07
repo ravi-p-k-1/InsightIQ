@@ -119,7 +119,12 @@ export async function upsertFredSeriesBatch(client, seriesBatch) {
   return seriesBatch.length;
 }
 
-export async function getFredSeriesNeedingEmbeddings(client, limit) {
+export async function getFredSeriesNeedingEmbeddings(
+  client,
+  limit,
+  options = {},
+) {
+  const taggedOnly = options.taggedOnly ?? false;
   const { rows } = await client.query(
     `
       SELECT series_id, embedding_text
@@ -127,13 +132,61 @@ export async function getFredSeriesNeedingEmbeddings(client, limit) {
       WHERE embedding IS NULL
         AND embedding_text IS NOT NULL
         AND embedding_text <> ''
+        AND ($2::boolean = false OR tags_updated_at IS NOT NULL)
       ORDER BY popularity DESC NULLS LAST, series_id ASC
       LIMIT $1
     `,
-    [limit],
+    [limit, taggedOnly],
   );
 
   return rows;
+}
+
+export async function prepareTaggedSeriesEmbeddings(client) {
+  const clearUntaggedResult = await client.query(`
+    UPDATE fred_series
+    SET embedding = NULL,
+        updated_at = now()
+    WHERE tags_updated_at IS NULL
+      AND embedding IS NOT NULL
+  `);
+
+  const prepareTaggedResult = await client.query(`
+    UPDATE fred_series
+    SET embedding_text = concat_ws(
+          E'\n',
+          'Series ID: ' || series_id,
+          'Title: ' || title,
+          CASE
+            WHEN cardinality(tag_names) > 0
+              THEN 'Tags: ' || array_to_string(tag_names, ', ')
+            ELSE NULL
+          END,
+          CASE WHEN units IS NOT NULL THEN 'Units: ' || units ELSE NULL END,
+          CASE
+            WHEN frequency IS NOT NULL THEN 'Frequency: ' || frequency
+            ELSE NULL
+          END,
+          CASE
+            WHEN seasonal_adjustment IS NOT NULL
+              THEN 'Seasonal adjustment: ' || seasonal_adjustment
+            ELSE NULL
+          END,
+          CASE
+            WHEN cardinality(scopes) > 0
+              THEN 'Scope: ' || array_to_string(scopes, ', ')
+            ELSE NULL
+          END
+        ),
+        embedding = NULL,
+        updated_at = now()
+    WHERE tags_updated_at IS NOT NULL
+  `);
+
+  return {
+    clearedUntaggedEmbeddings: clearUntaggedResult.rowCount,
+    preparedTaggedSeries: prepareTaggedResult.rowCount,
+  };
 }
 
 export async function updateFredSeriesEmbedding(client, seriesId, embedding) {
@@ -147,6 +200,39 @@ export async function updateFredSeriesEmbedding(client, seriesId, embedding) {
       WHERE series_id = $1
     `,
     [seriesId, vector],
+  );
+}
+
+export async function getFredSeriesNeedingTags(client, limit) {
+  const { rows } = await client.query(
+    `
+      SELECT series_id
+      FROM fred_series
+      WHERE tags_updated_at IS NULL
+      ORDER BY popularity DESC NULLS LAST, series_id ASC
+      LIMIT $1
+    `,
+    [limit],
+  );
+
+  return rows;
+}
+
+export async function updateFredSeriesTags(client, seriesId, tags) {
+  const tagNames = [...new Set(tags.map((tag) => tag.name))].sort();
+  const tagGroupIds = [...new Set(tags.map((tag) => tag.groupId))].sort();
+
+  await client.query(
+    `
+      UPDATE fred_series
+      SET tags = $2::jsonb,
+          tag_names = $3,
+          tag_group_ids = $4,
+          tags_updated_at = now(),
+          updated_at = now()
+      WHERE series_id = $1
+    `,
+    [seriesId, JSON.stringify(tags), tagNames, tagGroupIds],
   );
 }
 

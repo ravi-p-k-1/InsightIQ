@@ -9,6 +9,7 @@ const defaultBatchSize = 25;
 export async function embedFredSeries(client, options = {}) {
   const limit = options.limit ?? defaultBatchSize;
   const batchSize = options.batchSize ?? defaultBatchSize;
+  const taggedOnly = options.taggedOnly ?? false;
   let embeddedCount = 0;
 
   while (embeddedCount < limit) {
@@ -16,6 +17,7 @@ export async function embedFredSeries(client, options = {}) {
     const rows = await getFredSeriesNeedingEmbeddings(
       client,
       Math.min(batchSize, remaining),
+      { taggedOnly },
     );
 
     if (rows.length === 0) {

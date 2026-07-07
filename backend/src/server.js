@@ -1,5 +1,5 @@
 import express from 'express'
-import { getFredSeriesForQuery } from './services/geminiFred.js'
+import { getFredSeriesForQuery } from './services/vectorFred.js'
 import { getInsightsForFredSeries } from './services/geminiInsights.js'
 import { getFredSeriesWithObservations } from './services/fred.js'
 import { normalizeSelectedSeries } from './utils/series.js'
@@ -74,11 +74,12 @@ app.post('/api/insights', async (request, response) => {
       return
     }
 
-    const series = await getInsightsForFredSeries(query, seriesWithObservations)
+    const insights = await getInsightsForFredSeries(query, seriesWithObservations)
 
     response.json({
       query,
-      series,
+      summary: insights.summary,
+      series: insights.series,
     })
   } catch (error) {
     response.status(500).json({ error: error.message })

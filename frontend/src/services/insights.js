@@ -43,6 +43,7 @@ export async function getInsightsForSeries(query, series) {
   }
 
   if (
+    typeof data.summary !== 'string' ||
     !Array.isArray(data.series) ||
     data.series.some(
       (item) =>

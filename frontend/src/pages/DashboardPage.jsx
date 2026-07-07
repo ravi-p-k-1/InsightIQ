@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import PromptSearchBar from '../components/PromptSearchBar'
+import OverallSummary from '../components/OverallSummary'
 import ResultsGrid from '../components/ResultsGrid'
 import { getFredSeriesForQuery, getInsightsForSeries } from '../services/insights'
 import { saveHistoryItem } from '../services/history'
 
 function DashboardPage() {
   const [series, setSeries] = useState([])
+  const [summary, setSummary] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [openGuidanceSections, setOpenGuidanceSections] = useState({})
@@ -21,10 +23,12 @@ function DashboardPage() {
     setIsLoading(true)
     setError('')
     setSeries([])
+    setSummary('')
 
     try {
       const selectedSeries = await getFredSeriesForQuery(query)
       const result = await getInsightsForSeries(query, selectedSeries)
+      setSummary(result.summary)
       setSeries(result.series)
       saveHistoryItem(query, result)
     } catch (currentError) {
@@ -83,8 +87,14 @@ function DashboardPage() {
                 </li>
                 <li>
                   <strong>Keep prompts concise.</strong> Short, focused questions help the
-                  AI identify the most relevant economic indicators. Very long prompts
-                  may reduce selection accuracy.
+                  retrieval system identify the most relevant economic indicators. Very
+                  long prompts may reduce selection accuracy.
+                </li>
+                <li>
+                  <strong>Use economic concepts, not series IDs.</strong> InsightIQ now
+                  searches its local FRED index for matching indicators, so prompts like
+                  "inflation and unemployment since 2020" are preferred over manually
+                  listing FRED series IDs.
                 </li>
               </ul>
             </div>
@@ -129,9 +139,15 @@ function DashboardPage() {
                   commentary.
                 </li>
                 <li>
-                  <strong>Indicator selection is automated.</strong> The AI currently
-                  chooses which economic indicators to analyze. Manual selection of
-                  specific FRED series is not yet supported.
+                  <strong>Overall summaries combine selected charts.</strong> The summary
+                  is generated from the retrieved series shown on the dashboard, not from
+                  outside news or web research.
+                </li>
+                <li>
+                  <strong>Indicator selection is automated.</strong> InsightIQ currently
+                  uses vector search over its indexed FRED catalog to choose which
+                  economic indicators to analyze. Manual selection of specific FRED
+                  series is not yet supported.
                 </li>
               </ul>
             </div>
@@ -174,6 +190,7 @@ function DashboardPage() {
 
       {error && <p className="dashboard__error">{error}</p>}
 
+      <OverallSummary summary={summary} />
       <ResultsGrid series={series} />
     </>
   )

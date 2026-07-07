@@ -16,6 +16,21 @@ Rules:
 - Do not include markdown, comments, or extra text.
 `
 
+const overallSummaryPrompt = `
+You summarize a dashboard built from multiple FRED series.
+Given a user's question and the retrieved FRED series with observations, return only JSON with this exact shape:
+{
+  "summary": "Three to five sentence plain-English overview of the combined data."
+}
+
+Rules:
+- Ground the summary only in the supplied observations.
+- Mention how the series relate to the user's question when the data supports it.
+- Do not invent causes, forecasts, policy recommendations, or external context.
+- If the series point in different directions, say that directly.
+- Do not include markdown, comments, or extra text.
+`
+
 export async function getInsightForFredSeries(query, series) {
   const response = await getGeminiClient().models.generateContent({
     model: 'gemini-2.5-flash',
@@ -39,11 +54,39 @@ export async function getInsightForFredSeries(query, series) {
   }
 }
 
+export async function getOverallInsightSummary(query, series) {
+  const response = await getGeminiClient().models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: `${overallSummaryPrompt}\n\nUser question: ${query}\n\nFRED data: ${JSON.stringify(
+      series,
+    )}`,
+    config: {
+      responseMimeType: 'application/json',
+    },
+  })
+
+  const data = parseGeminiJson(response.text ?? '')
+
+  if (typeof data.summary !== 'string') {
+    throw new Error('Gemini returned an unexpected overall summary response format.')
+  }
+
+  return data.summary
+}
+
 export async function getInsightsForFredSeries(query, series) {
-  return Promise.all(
-    series.map(async (item) => ({
-      ...item,
-      insight: await getInsightForFredSeries(query, item),
-    })),
-  )
+  const [summary, seriesWithInsights] = await Promise.all([
+    getOverallInsightSummary(query, series),
+    Promise.all(
+      series.map(async (item) => ({
+        ...item,
+        insight: await getInsightForFredSeries(query, item),
+      })),
+    ),
+  ])
+
+  return {
+    summary,
+    series: seriesWithInsights,
+  }
 }

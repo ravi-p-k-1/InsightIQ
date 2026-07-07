@@ -1,7 +1,8 @@
 # InsightIQ Data Pipeline
 
-This folder contains offline ingestion and indexing jobs. These scripts are
-separate from the backend API because catalog generation can be long-running.
+This folder contains offline ingestion and indexing jobs for the local FRED
+retrieval database. These scripts are separate from the backend API because
+catalog generation, tag sync, embedding, and indexing can be long-running.
 
 ## Structure
 
@@ -12,6 +13,13 @@ separate from the backend API because catalog generation can be long-running.
 - `src/utils/`: Environment and rate limiting helpers.
 
 ## Setup
+
+Install pipeline dependencies:
+
+```bash
+cd pipeline
+npm.cmd install
+```
 
 Create `pipeline/.env` from `pipeline/.env.template`:
 
@@ -25,6 +33,10 @@ EMBEDDING_MODEL=Xenova/bge-small-en-v1.5
 `FRED_REQUESTS_PER_MINUTE` controls the maximum request start rate. Requests
 are evenly spaced to avoid bursts, and retries use the same scheduler. The
 default of 120 matches FRED's documented request limit.
+
+The backend uses the same `DATABASE_URL` and `EMBEDDING_MODEL` values when it
+performs vector search for `/api/series-ids`, so keep backend and pipeline
+configuration aligned.
 
 ## Local Vector Database
 
@@ -106,8 +118,8 @@ FRED request through the shared rate limiter:
 npm.cmd run db:sync:fred-tags -- --limit 5000 --concurrency 8
 ```
 
-To test tag-enriched embeddings on only the tagged subset, prepare the table and
-then run tagged-only embedding:
+To rebuild embeddings for the full tagged subset, prepare the table and then
+run tagged-only embedding:
 
 ```bash
 npm.cmd run db:prepare:tagged-embeddings
@@ -117,6 +129,14 @@ npm.cmd run db:embed:fred -- --tagged-only --limit 5000
 The preparation command clears embeddings for untagged rows and rebuilds
 `embedding_text` for tagged rows using series ID, title, tags, units, frequency,
 seasonal adjustment, and scope.
+
+To embed only newly tagged rows without clearing existing tagged embeddings, use
+the missing-only preparation path:
+
+```bash
+npm.cmd run db:prepare:tagged-embeddings -- --missing-only
+npm.cmd run db:embed:fred -- --tagged-only --limit 5000 --batch-size 50
+```
 
 ## Embed FRED Series
 
@@ -157,3 +177,7 @@ Pass a custom result count with `--limit`:
 ```bash
 npm.cmd run db:search:fred -- --limit 20 "housing prices in California"
 ```
+
+The backend uses the same retrieval path for `/api/series-ids`, then sends the
+retrieved series and observations to Gemini for the overall dashboard summary
+and individual chart explanations.

@@ -17,15 +17,14 @@ Create `pipeline/.env` from `pipeline/.env.template`:
 
 ```bash
 FRED_API_KEY=your_fred_api_key_here
-FRED_REQUESTS_PER_MINUTE=60
+FRED_REQUESTS_PER_MINUTE=120
 DATABASE_URL=postgres://insightiq:insightiq@localhost:15432/insightiq_vector
 EMBEDDING_MODEL=Xenova/bge-small-en-v1.5
 ```
 
 `FRED_REQUESTS_PER_MINUTE` controls the maximum request start rate. Requests
 are evenly spaced to avoid bursts, and retries use the same scheduler. The
-default of 60 is intentionally conservative because FRED does not document one
-universal public RPM quota.
+default of 120 matches FRED's documented request limit.
 
 ## Local Vector Database
 
@@ -74,13 +73,13 @@ them directly into the `fred_series` table:
 ```bash
 cd pipeline
 docker compose up -d
-npm run db:sync:fred
+npm.cmd run db:sync:fred
 ```
 
 For a quick API-to-database test, pass a per-scope limit:
 
 ```bash
-npm run db:sync:fred -- --limit 1000
+npm.cmd run db:sync:fred -- --limit 1000
 ```
 
 The sync stores series metadata and an `embedding_text` field that will be used
@@ -94,18 +93,25 @@ Fetch official FRED tags for series rows and store them in `fred_series.tags`,
 
 ```bash
 cd pipeline
-npm run db:sync:fred-tags -- --limit 100
+npm.cmd run db:sync:fred-tags -- --limit 100
 ```
 
 The command is resumable. It fetches rows where `tags_updated_at` is empty,
 ordered by popularity, and respects `FRED_REQUESTS_PER_MINUTE`.
 
+Use `--concurrency` to overlap slow network responses while still sending every
+FRED request through the shared rate limiter:
+
+```bash
+npm.cmd run db:sync:fred-tags -- --limit 5000 --concurrency 8
+```
+
 To test tag-enriched embeddings on only the tagged subset, prepare the table and
 then run tagged-only embedding:
 
 ```bash
-npm run db:prepare:tagged-embeddings
-npm run db:embed:fred -- --tagged-only --limit 5000
+npm.cmd run db:prepare:tagged-embeddings
+npm.cmd run db:embed:fred -- --tagged-only --limit 5000
 ```
 
 The preparation command clears embeddings for untagged rows and rebuilds
@@ -119,7 +125,7 @@ and the configured Xenova model:
 
 ```bash
 cd pipeline
-npm run db:embed:fred -- --limit 100
+npm.cmd run db:embed:fred -- --limit 100
 ```
 
 The default model is `Xenova/bge-small-en-v1.5`, which produces 384-dimensional
@@ -131,7 +137,7 @@ After embeddings are generated, create the pgvector HNSW index:
 
 ```bash
 cd pipeline
-npm run db:index:fred
+npm.cmd run db:index:fred
 ```
 
 This speeds up vector search over the `fred_series.embedding` column.
@@ -143,11 +149,11 @@ cosine distance:
 
 ```bash
 cd pipeline
-npm run db:search:fred -- "inflation and unemployment since 2020"
+npm.cmd run db:search:fred -- "inflation and unemployment since 2020"
 ```
 
 Pass a custom result count with `--limit`:
 
 ```bash
-npm run db:search:fred -- --limit 20 "housing prices in California"
+npm.cmd run db:search:fred -- --limit 20 "housing prices in California"
 ```

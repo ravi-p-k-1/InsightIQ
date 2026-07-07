@@ -189,6 +189,44 @@ export async function prepareTaggedSeriesEmbeddings(client) {
   };
 }
 
+export async function prepareMissingTaggedSeriesEmbeddings(client) {
+  const prepareTaggedResult = await client.query(`
+    UPDATE fred_series
+    SET embedding_text = concat_ws(
+          E'\n',
+          'Series ID: ' || series_id,
+          'Title: ' || title,
+          CASE
+            WHEN cardinality(tag_names) > 0
+              THEN 'Tags: ' || array_to_string(tag_names, ', ')
+            ELSE NULL
+          END,
+          CASE WHEN units IS NOT NULL THEN 'Units: ' || units ELSE NULL END,
+          CASE
+            WHEN frequency IS NOT NULL THEN 'Frequency: ' || frequency
+            ELSE NULL
+          END,
+          CASE
+            WHEN seasonal_adjustment IS NOT NULL
+              THEN 'Seasonal adjustment: ' || seasonal_adjustment
+            ELSE NULL
+          END,
+          CASE
+            WHEN cardinality(scopes) > 0
+              THEN 'Scope: ' || array_to_string(scopes, ', ')
+            ELSE NULL
+          END
+        ),
+        updated_at = now()
+    WHERE tags_updated_at IS NOT NULL
+      AND embedding IS NULL
+  `);
+
+  return {
+    preparedTaggedSeries: prepareTaggedResult.rowCount,
+  };
+}
+
 export async function updateFredSeriesEmbedding(client, seriesId, embedding) {
   const vector = `[${embedding.join(',')}]`;
 

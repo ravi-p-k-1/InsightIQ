@@ -3,32 +3,38 @@ import { withDatabaseClient } from '../src/clients/database.js';
 import { syncFredSeriesTags } from '../src/services/fredSeriesTags.js';
 import { getFredSeriesTableStats } from '../src/services/fredSeriesTable.js';
 
-function parseLimit() {
-  const limitIndex = process.argv.indexOf('--limit');
+function parsePositiveIntegerOption(name, defaultValue) {
+  const optionIndex = process.argv.indexOf(name);
 
-  if (limitIndex === -1) {
-    return 100;
+  if (optionIndex === -1) {
+    return defaultValue;
   }
 
-  const limit = Number.parseInt(process.argv[limitIndex + 1], 10);
+  const value = Number.parseInt(process.argv[optionIndex + 1], 10);
 
-  if (!Number.isInteger(limit) || limit <= 0) {
-    throw new Error('--limit must be a positive integer.');
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${name} must be a positive integer.`);
   }
 
-  return limit;
+  return value;
 }
 
-const limit = parseLimit();
+const limit = parsePositiveIntegerOption('--limit', 100);
+const concurrency = parsePositiveIntegerOption('--concurrency', 5);
 
 console.log(`FRED request limit: ${fredRequestsPerMinute} requests per minute`);
 console.log(`Tag sync limit: ${limit.toLocaleString()}`);
+console.log(`Tag sync concurrency: ${concurrency.toLocaleString()}`);
 
 await withDatabaseClient(async (client) => {
-  const { syncedCount } = await syncFredSeriesTags(client, { limit });
+  const { syncedCount, failedCount } = await syncFredSeriesTags(client, {
+    limit,
+    concurrency,
+  });
   const stats = await getFredSeriesTableStats(client);
 
   console.log(`Synced tags for ${syncedCount.toLocaleString()} FRED series.`);
+  console.log(`Failed tag syncs: ${failedCount.toLocaleString()}`);
   console.log(`Total FRED series in database: ${stats.total_series}`);
   console.log(`Tagged FRED series: ${stats.tagged_series}`);
   console.log(`Embedded FRED series: ${stats.embedded_series}`);

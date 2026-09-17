@@ -1,0 +1,22 @@
+{
+  "name": "insightiq-mcp-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "insightiq-mcp": "src/server.js"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "eval:contract": "node --env-file=.env evals/toolContract.js",
+    "eval:retrieval": "node --env-file=.env evals/retrievalRecall.js",
+    "eval": "npm run eval:contract && npm run eval:retrieval"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.24.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

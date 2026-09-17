@@ -9,7 +9,25 @@ stdio transport all live here. There is no database and no LLM call anywhere
 in this server — it returns raw retrieved data only, and the calling agent is
 responsible for analyzing that data and writing any explanation.
 
-## Setup
+## Install from npm
+
+Once published, no cloning is needed — any MCP client can launch it directly:
+
+```json
+{
+  "mcpServers": {
+    "insightiq": {
+      "command": "npx",
+      "args": ["-y", "insightiq-mcp"],
+      "env": {
+        "FRED_API_KEY": "your_fred_api_key_here"
+      }
+    }
+  }
+}
+```
+
+## Setup (from source)
 
 ```bash
 npm.cmd install

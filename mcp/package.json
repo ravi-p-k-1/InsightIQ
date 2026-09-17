@@ -1,11 +1,21 @@
 {
-  "name": "insightiq-mcp-server",
-  "private": true,
-  "version": "0.0.0",
+  "name": "insightiq-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for looking up real FRED (Federal Reserve Economic Data) series and their historical observations.",
   "type": "module",
+  "license": "CC0-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ravi-p-k-1/InsightIQ.git",
+    "directory": "mcp"
+  },
+  "mcpName": "io.github.ravi-p-k-1/insightiq",
   "bin": {
     "insightiq-mcp": "src/server.js"
   },
+  "files": [
+    "src"
+  ],
   "scripts": {
     "start": "node --env-file=.env src/server.js",
     "eval:contract": "node --env-file=.env evals/toolContract.js",

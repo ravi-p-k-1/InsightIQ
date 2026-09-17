@@ -111,9 +111,10 @@ mocking) and drive it exactly the way an agent would: by calling tools by
 name with real arguments.
 
 ```bash
-npm.cmd run eval:contract    # tool inventory, schema/error-path, happy-path checks
-npm.cmd run eval:retrieval   # retrieval recall benchmark against live FRED
-npm.cmd run eval              # both
+npm.cmd run eval:contract          # tool inventory, schema/error-path, happy-path checks
+npm.cmd run eval:retrieval         # retrieval recall floor (single raw question)
+npm.cmd run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
+npm.cmd run eval                    # all three
 ```
 
 ### `eval:contract`
@@ -129,11 +130,24 @@ known-good call against live FRED.
 ### `eval:retrieval`
 
 Runs `evals/questions.json` (natural-language questions with known-relevant
-FRED series) through the real `search_economic_series` tool (with
-`limit: 5`) and reports Recall@5 and response time. This deliberately
-evaluates the single-phrase, no-query-intelligence path (what the plain
-`question` field gets on its own, no tag filtering), not the multi-phrase or
-tag-filtered path a good agent can use via `searchQueries`/`tags`.
+FRED series) through the real `search_economic_series` tool with each
+question passed as a single raw `queries` entry (`limit: 5`), and reports
+Recall@5 and response time. This deliberately evaluates the floor: no phrase
+splitting, no tags, exactly what the plain `question` field gets with zero
+query intelligence applied.
 
-Both evals hit the live FRED API, so they need a real `FRED_API_KEY` and are
-run manually/locally rather than in CI.
+### `eval:retrieval:smart`
+
+Runs the same questions and scoring, but through `evals/queryPlans.json` — a
+checked-in, per-question set of concise search phrases (and `tags` where they
+help) chosen the way a competent agent actually would, replayed deterministically
+with no LLM call needed at eval time. This measures the ceiling the `queries`/
+`tags` parameters enable: splitting compound questions into per-topic phrases
+and using real economic terminology instead of the raw sentence took this from
+45.3% (floor) to 54.9% (ceiling) on the same question set. If `queryPlans.json`
+gets out of sync with `questions.json` (wrong length, or a question at the same
+index doesn't match), the eval fails loudly with a diff rather than silently
+scoring against the wrong plan.
+
+All three evals hit the live FRED API, so they need a real `FRED_API_KEY` and
+are run manually/locally rather than in CI.

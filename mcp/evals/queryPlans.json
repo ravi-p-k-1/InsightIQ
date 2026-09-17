@@ -1,0 +1,143 @@
+[
+  {
+    "question": "How is inflation changing in the United States?",
+    "queries": ["inflation", "consumer price index", "personal consumption expenditures price index"]
+  },
+  {
+    "question": "What is the current unemployment situation in the United States?",
+    "queries": ["unemployment rate"]
+  },
+  {
+    "question": "How is the job market doing in the United States?",
+    "queries": ["unemployment rate", "nonfarm payroll employment", "job openings"]
+  },
+  {
+    "question": "Compare unemployment and GDP trends.",
+    "queries": ["unemployment rate", "gross domestic product"]
+  },
+  {
+    "question": "How fast is GDP growing in the United States?",
+    "queries": ["real gross domestic product", "gdp growth rate"]
+  },
+  {
+    "question": "What is happening with consumer spending?",
+    "queries": ["personal consumption expenditures"]
+  },
+  {
+    "question": "How are personal income trends changing?",
+    "queries": ["personal income", "disposable personal income"]
+  },
+  {
+    "question": "What is happening with mortgage rates?",
+    "queries": ["30-year mortgage rate", "15-year mortgage rate"]
+  },
+  {
+    "question": "How are interest rates changing?",
+    "queries": ["federal funds rate", "10-year treasury yield", "SOFR"]
+  },
+  {
+    "question": "What are Federal Reserve interest rates doing?",
+    "queries": ["federal funds rate"]
+  },
+  {
+    "question": "What does the yield curve suggest?",
+    "queries": ["10-year 2-year treasury yield spread", "yield curve"]
+  },
+  {
+    "question": "What indicators should I monitor for a potential recession?",
+    "queries": ["recession indicator", "sahm rule recession indicator"]
+  },
+  {
+    "question": "How are gas prices and energy inflation changing?",
+    "queries": ["regular gasoline price", "energy consumer price index"]
+  },
+  {
+    "question": "How is the housing market doing nationally?",
+    "queries": ["home price index", "housing starts", "existing home sales"]
+  },
+  {
+    "question": "How are home prices changing in Texas?",
+    "queries": ["Texas house price index"]
+  },
+  {
+    "question": "What is the unemployment rate in California?",
+    "queries": ["California unemployment rate"]
+  },
+  {
+    "question": "What is the unemployment rate in Texas?",
+    "queries": ["Texas unemployment rate"]
+  },
+  {
+    "question": "How is Florida's population changing?",
+    "queries": ["Florida population"]
+  },
+  {
+    "question": "How is California's population changing?",
+    "queries": ["California population"]
+  },
+  {
+    "question": "How are wages changing in the United States?",
+    "queries": ["average hourly earnings", "employment cost index wages"]
+  },
+  {
+    "question": "How productive are workers in the United States?",
+    "queries": ["nonfarm business sector labor productivity"]
+  },
+  {
+    "question": "How is manufacturing activity doing?",
+    "queries": ["industrial production manufacturing", "manufacturing employment"],
+    "tags": ["usa"]
+  },
+  {
+    "question": "How is industrial production changing?",
+    "queries": ["industrial production index"]
+  },
+  {
+    "question": "How are retail sales trending?",
+    "queries": ["retail sales"]
+  },
+  {
+    "question": "How confident are consumers?",
+    "queries": ["consumer sentiment index"]
+  },
+  {
+    "question": "What is happening with household debt?",
+    "queries": ["household debt service ratio", "consumer credit"]
+  },
+  {
+    "question": "How are business investment trends changing?",
+    "queries": ["private nonresidential fixed investment"]
+  },
+  {
+    "question": "How is the federal debt changing?",
+    "queries": ["federal debt total public debt", "federal surplus or deficit"]
+  },
+  {
+    "question": "How is the trade balance changing?",
+    "queries": ["trade balance goods and services"]
+  },
+  {
+    "question": "How is the dollar exchange rate changing?",
+    "queries": ["trade weighted dollar index", "US dollar exchange rate"]
+  },
+  {
+    "question": "How are bank lending conditions changing?",
+    "queries": ["senior loan officer survey bank lending standards", "commercial and industrial loans"]
+  },
+  {
+    "question": "How are job openings changing?",
+    "queries": ["job openings"]
+  },
+  {
+    "question": "How is labor force participation changing?",
+    "queries": ["labor force participation rate"]
+  },
+  {
+    "question": "How is poverty changing in the United States?",
+    "queries": ["poverty rate"]
+  },
+  {
+    "question": "How is median household income changing?",
+    "queries": ["median household income"]
+  }
+]

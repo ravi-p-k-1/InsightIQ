@@ -10,7 +10,8 @@
     "start": "node --env-file=.env src/server.js",
     "eval:contract": "node --env-file=.env evals/toolContract.js",
     "eval:retrieval": "node --env-file=.env evals/retrievalRecall.js",
-    "eval": "npm run eval:contract && npm run eval:retrieval"
+    "eval:retrieval:smart": "node --env-file=.env evals/retrievalRecallSmart.js",
+    "eval": "npm run eval:contract && npm run eval:retrieval && npm run eval:retrieval:smart"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

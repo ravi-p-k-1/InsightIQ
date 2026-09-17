@@ -135,8 +135,13 @@ FRED API, so they're run manually rather than in CI:
 
 ```bash
 cd mcp
-npm.cmd run eval:contract    # tool inventory, schema/error-path, happy-path checks
-npm.cmd run eval:retrieval   # retrieval recall benchmark
+npm.cmd run eval:contract          # tool inventory, schema/error-path, happy-path checks
+npm.cmd run eval:retrieval         # retrieval recall floor (single raw question)
+npm.cmd run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
 ```
 
-See [`mcp/README.md`](mcp/README.md) for what each eval checks.
+`eval:retrieval` measures the no-query-intelligence floor (45.3% on the
+current question set); `eval:retrieval:smart` replays a checked-in set of
+per-question search phrases/tags chosen the way a competent agent would
+(54.9%), without needing a live LLM call at eval time. See
+[`mcp/README.md`](mcp/README.md) for what each eval checks.

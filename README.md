@@ -1,9 +1,9 @@
 # InsightIQ: Economy Insight Assistant
 
 InsightIQ is a local [MCP](https://modelcontextprotocol.io) server that gives
-an agent (Claude Code, Claude Desktop, or any other MCP client) the ability to
-look up real FRED (Federal Reserve Economic Data) series and their historical
-observations to answer economic questions.
+an AI agent (Claude Code, Claude Desktop, or any other MCP client) the ability
+to look up real FRED (Federal Reserve Economic Data) series and their
+historical observations to answer economic questions.
 
 The flow is:
 
@@ -12,6 +12,30 @@ The flow is:
 2. The agent fetches annual observations and units for the series it cares about.
 3. The agent analyzes that data itself and answers the user's question —
    InsightIQ returns retrieved data only, it does not generate the explanation.
+
+## Install
+
+Published on npm as [`insightiq-mcp`](https://www.npmjs.com/package/insightiq-mcp).
+You'll need a free FRED API key first: [get one here](https://fred.stlouisfed.org/docs/api/api_key.html).
+
+```json
+{
+  "mcpServers": {
+    "insightiq": {
+      "command": "npx",
+      "args": ["-y", "insightiq-mcp"],
+      "env": {
+        "FRED_API_KEY": "your_fred_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Add that to your MCP client's config (a `.mcp.json` file for Claude Code, or
+Settings → Developer → Edit Config in Claude Desktop). See
+[`mcp/README.md`](mcp/README.md) for the full tool reference and per-client
+details.
 
 ## Architecture
 
@@ -32,58 +56,6 @@ Everything runs as a single local process launched by the agent host. There
 is no database, no local catalog, no separate backend service, and no LLM call
 anywhere in InsightIQ itself — the only model doing any reasoning about the
 data is whichever LLM is driving the calling agent.
-
-## Project Structure
-
-- `mcp/`: the MCP server. `src/tools/` are the exposed tools; `src/services/`
-  and `src/clients/` hold the FRED search and data-fetch logic; `evals/`
-  has the MCP-level eval suite (tool contract + retrieval recall).
-
-## Prerequisites
-
-- Node.js 20 or newer
-- A FRED API key
-
-## Setup
-
-```bash
-cd mcp
-npm.cmd install
-```
-
-Create `mcp/.env` from `mcp/.env.template`:
-
-```bash
-FRED_API_KEY=your_fred_api_key_here
-FRED_REQUESTS_PER_MINUTE=120
-```
-
-Run it directly to confirm it starts:
-
-```bash
-npm.cmd start
-```
-
-## Registering with Claude Code
-
-The repository root has a project-scoped `.mcp.json` that points at the server:
-
-```json
-{
-  "mcpServers": {
-    "insightiq": {
-      "command": "node",
-      "args": ["--env-file=mcp/.env", "mcp/src/server.js"]
-    }
-  }
-}
-```
-
-Claude Code picks this up automatically when opened at the repository root
-(with your approval on first use). To register it manually or in another MCP
-client, run the same command with a working `mcp/.env` in place.
-
-See [`mcp/README.md`](mcp/README.md) for the full tool reference.
 
 ## Tools
 
@@ -118,7 +90,44 @@ matching series with their series counts — the discovery step for using
 `tags`/`excludeTags` above, since FRED's tag vocabulary usually can't be
 guessed reliably.
 
-## Validation
+---
+
+## Development
+
+The following is only relevant if you want to modify this server or
+contribute to it — not needed to use it (see **Install** above for that).
+
+- `mcp/`: the MCP server. `src/tools/` are the exposed tools; `src/services/`
+  and `src/clients/` hold the FRED search and data-fetch logic; `evals/`
+  has the MCP-level eval suite (tool contract + retrieval recall).
+
+Prerequisites: Node.js 20 or newer, a FRED API key.
+
+```bash
+git clone https://github.com/ravi-p-k-1/InsightIQ.git
+cd InsightIQ/mcp
+npm install
+```
+
+Create `mcp/.env` from `mcp/.env.template`:
+
+```bash
+FRED_API_KEY=your_fred_api_key_here
+FRED_REQUESTS_PER_MINUTE=120
+```
+
+Run it directly to confirm it starts:
+
+```bash
+npm start
+```
+
+The repository root has a project-scoped `.mcp.json` that points Claude Code
+at your local checkout (picked up automatically when opened at the repository
+root, with your approval on first use) — useful for testing changes before
+publishing a new version.
+
+### Validation
 
 GitHub Actions runs CI on pushes to `main` and on pull requests: installs
 dependencies and checks syntax, without calling FRED.
@@ -135,9 +144,9 @@ FRED API, so they're run manually rather than in CI:
 
 ```bash
 cd mcp
-npm.cmd run eval:contract          # tool inventory, schema/error-path, happy-path checks
-npm.cmd run eval:retrieval         # retrieval recall floor (single raw question)
-npm.cmd run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
+npm run eval:contract          # tool inventory, schema/error-path, happy-path checks
+npm run eval:retrieval         # retrieval recall floor (single raw question)
+npm run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
 ```
 
 `eval:retrieval` measures the no-query-intelligence floor (45.3% on the

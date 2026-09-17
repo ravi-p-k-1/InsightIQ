@@ -1,17 +1,21 @@
 # InsightIQ MCP Server
 
-A local [MCP](https://modelcontextprotocol.io) server that lets an agent (Claude
-Code, Claude Desktop, or any other MCP client) look up real FRED economic
-data series directly.
+A local [MCP](https://modelcontextprotocol.io) server that gives an AI agent
+(Claude Code, Claude Desktop, or any other MCP client) the ability to look up
+real FRED (Federal Reserve Economic Data) series and their historical
+observations, so it can answer economic questions grounded in real data.
 
-It's a single self-contained process: FRED search, data fetching, and the MCP
-stdio transport all live here. There is no database and no LLM call anywhere
-in this server — it returns raw retrieved data only, and the calling agent is
-responsible for analyzing that data and writing any explanation.
+It returns raw retrieved data only — series, units, observations — never a
+pre-written summary. The agent you're talking to does the analysis and writes
+the answer itself, using this server purely to fetch real numbers instead of
+guessing them.
 
-## Install from npm
+## Install
 
-Once published, no cloning is needed — any MCP client can launch it directly:
+You'll need a free FRED API key first: [get one here](https://fred.stlouisfed.org/docs/api/api_key.html)
+(a couple of minutes, no cost).
+
+Add this to your MCP client's configuration:
 
 ```json
 {
@@ -27,44 +31,16 @@ Once published, no cloning is needed — any MCP client can launch it directly:
 }
 ```
 
-## Setup (from source)
+- **Claude Code**: add this to a `.mcp.json` file in your project (or your
+  user-level MCP config).
+- **Claude Desktop**: Settings → Developer → Edit Config, add this under
+  `mcpServers` in the config file it opens.
+- **Other clients**: any MCP client that supports launching a local server via
+  a command accepts the same shape — check your client's docs for where its
+  config file lives.
 
-```bash
-npm.cmd install
-```
-
-Create `.env` from `.env.template`:
-
-```bash
-FRED_API_KEY=your_fred_api_key_here
-FRED_REQUESTS_PER_MINUTE=120
-```
-
-Run it directly to confirm it starts:
-
-```bash
-npm.cmd start
-```
-
-## Registering with Claude Code
-
-The repository root already has a project-scoped `.mcp.json` that points at
-this server:
-
-```json
-{
-  "mcpServers": {
-    "insightiq": {
-      "command": "node",
-      "args": ["--env-file=mcp/.env", "mcp/src/server.js"]
-    }
-  }
-}
-```
-
-Claude Code picks this up automatically when opened at the repository root
-(with your approval on first use). To register it manually or in another MCP
-client, run the same command with a working `.env` in place.
+No installation step needed beyond that — `npx` downloads and runs the
+package the first time it's launched.
 
 ## Tools
 
@@ -92,8 +68,8 @@ only — no summary or explanation is generated.
 
 Convenience tool that chains the two above: searches for relevant series using
 `searchQueries` if given (falling back to the raw `question` otherwise), then
-fetches their observations. Still returns raw data only — the calling agent
-should analyze it and write the answer. Use the two tools separately when you
+fetches their observations. Still returns raw data only — the agent using this
+tool analyzes it and writes the answer. Use the two tools separately when you
 want to inspect or filter the candidate series before fetching observations.
 Also accepts `limit`, `tags`, and `excludeTags`, same as `search_economic_series`.
 
@@ -117,10 +93,51 @@ to precede filtering `search_economic_series`/`get_economic_data` with
 
 Tool failures (invalid input, no matching series, FRED unavailable, etc.) are
 returned as MCP tool results with `isError: true` and a human-readable
-message, rather than crashing the server, so the calling agent can see and
+message, rather than crashing the server, so the agent using it can see and
 react to them.
 
-## Evals
+---
+
+## Development
+
+The following is only relevant if you want to modify this server or
+contribute to it — not needed to use it.
+
+Clone [the repository](https://github.com/ravi-p-k-1/InsightIQ) and install:
+
+```bash
+cd mcp
+npm install
+```
+
+Create `.env` from `.env.template`:
+
+```bash
+FRED_API_KEY=your_fred_api_key_here
+FRED_REQUESTS_PER_MINUTE=120
+```
+
+Run it directly to confirm it starts:
+
+```bash
+npm start
+```
+
+To point an MCP client at your local checkout instead of the published
+package (useful while testing changes):
+
+```json
+{
+  "mcpServers": {
+    "insightiq": {
+      "command": "node",
+      "args": ["--env-file=/absolute/path/to/InsightIQ/mcp/.env", "/absolute/path/to/InsightIQ/mcp/src/server.js"]
+    }
+  }
+}
+```
+
+### Evals
 
 There is no separate unit-test suite — this server is verified entirely
 through MCP-level evals in `evals/`, which connect a real `Client` to the
@@ -129,13 +146,13 @@ mocking) and drive it exactly the way an agent would: by calling tools by
 name with real arguments.
 
 ```bash
-npm.cmd run eval:contract          # tool inventory, schema/error-path, happy-path checks
-npm.cmd run eval:retrieval         # retrieval recall floor (single raw question)
-npm.cmd run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
-npm.cmd run eval                    # all three
+npm run eval:contract          # tool inventory, schema/error-path, happy-path checks
+npm run eval:retrieval         # retrieval recall floor (single raw question)
+npm run eval:retrieval:smart   # retrieval recall ceiling (curated query plans)
+npm run eval                    # all three
 ```
 
-### `eval:contract`
+#### `eval:contract`
 
 Asserts the server's actual protocol-level behavior: it exposes exactly the
 four tools above, unknown tool names and schema-invalid arguments (empty
@@ -145,7 +162,7 @@ series ID is rejected by the handler, `limit` and the `tags`/`excludeTags`
 filter actually change what comes back, and each tool succeeds on a real,
 known-good call against live FRED.
 
-### `eval:retrieval`
+#### `eval:retrieval`
 
 Runs `evals/questions.json` (natural-language questions with known-relevant
 FRED series) through the real `search_economic_series` tool with each
@@ -154,7 +171,7 @@ Recall@5 and response time. This deliberately evaluates the floor: no phrase
 splitting, no tags, exactly what the plain `question` field gets with zero
 query intelligence applied.
 
-### `eval:retrieval:smart`
+#### `eval:retrieval:smart`
 
 Runs the same questions and scoring, but through `evals/queryPlans.json` — a
 checked-in, per-question set of concise search phrases (and `tags` where they

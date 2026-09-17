@@ -143,5 +143,5 @@ npm.cmd run eval:retrieval:smart   # retrieval recall ceiling (curated query pla
 `eval:retrieval` measures the no-query-intelligence floor (45.3% on the
 current question set); `eval:retrieval:smart` replays a checked-in set of
 per-question search phrases/tags chosen the way a competent agent would
-(54.9%), without needing a live LLM call at eval time. See
+(62.4%), without needing a live LLM call at eval time. See
 [`mcp/README.md`](mcp/README.md) for what each eval checks.

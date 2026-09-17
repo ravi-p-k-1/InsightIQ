@@ -5,7 +5,7 @@
   },
   {
     "question": "What is the current unemployment situation in the United States?",
-    "queries": ["unemployment rate"]
+    "queries": ["unemployment rate", "labor underutilization rate"]
   },
   {
     "question": "How is the job market doing in the United States?",
@@ -17,7 +17,7 @@
   },
   {
     "question": "How fast is GDP growing in the United States?",
-    "queries": ["real gross domestic product", "gdp growth rate"]
+    "queries": ["gross domestic product", "real gdp percent change"]
   },
   {
     "question": "What is happening with consumer spending?",
@@ -41,7 +41,7 @@
   },
   {
     "question": "What does the yield curve suggest?",
-    "queries": ["10-year 2-year treasury yield spread", "yield curve"]
+    "queries": ["10-year treasury yield", "2-year treasury yield", "3-month treasury yield"]
   },
   {
     "question": "What indicators should I monitor for a potential recession?",
@@ -57,7 +57,8 @@
   },
   {
     "question": "How are home prices changing in Texas?",
-    "queries": ["Texas house price index"]
+    "queries": ["All-Transactions House Price Index"],
+    "tags": ["tx", "state"]
   },
   {
     "question": "What is the unemployment rate in California?",
@@ -102,11 +103,11 @@
   },
   {
     "question": "What is happening with household debt?",
-    "queries": ["household debt service ratio", "consumer credit"]
+    "queries": ["household debt service ratio", "household debt to gdp", "household liabilities"]
   },
   {
     "question": "How are business investment trends changing?",
-    "queries": ["private nonresidential fixed investment"]
+    "queries": ["private nonresidential fixed investment", "manufacturers new orders"]
   },
   {
     "question": "How is the federal debt changing?",
@@ -114,7 +115,7 @@
   },
   {
     "question": "How is the trade balance changing?",
-    "queries": ["trade balance goods and services"]
+    "queries": ["trade balance goods and services", "net exports", "exports of goods and services"]
   },
   {
     "question": "How is the dollar exchange rate changing?",

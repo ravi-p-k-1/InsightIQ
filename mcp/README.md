@@ -144,7 +144,7 @@ help) chosen the way a competent agent actually would, replayed deterministicall
 with no LLM call needed at eval time. This measures the ceiling the `queries`/
 `tags` parameters enable: splitting compound questions into per-topic phrases
 and using real economic terminology instead of the raw sentence took this from
-45.3% (floor) to 54.9% (ceiling) on the same question set. If `queryPlans.json`
+45.3% (floor) to 62.4% (ceiling) on the same question set. If `queryPlans.json`
 gets out of sync with `questions.json` (wrong length, or a question at the same
 index doesn't match), the eval fails loudly with a diff rather than silently
 scoring against the wrong plan.

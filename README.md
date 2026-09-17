@@ -113,7 +113,6 @@ Create `mcp/.env` from `mcp/.env.template`:
 
 ```bash
 FRED_API_KEY=your_fred_api_key_here
-FRED_REQUESTS_PER_MINUTE=120
 ```
 
 Run it directly to confirm it starts:

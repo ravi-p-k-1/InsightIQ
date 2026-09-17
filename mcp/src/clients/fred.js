@@ -1,16 +1,13 @@
-import { getPositiveIntegerEnv, getRequiredEnv } from '../utils/env.js'
+import { getRequiredEnv } from '../utils/env.js'
 import { createRateLimiter, wait } from '../utils/rateLimiter.js'
 
 const fredApiBaseUrl = 'https://api.stlouisfed.org/fred'
 const fredMaxAttempts = 5
-const defaultFredRequestsPerMinute = 120
+// Matches FRED's documented rate limit - not user-configurable since there's
+// no reason a caller would need a different value for FRED's own API.
+const fredRequestsPerMinute = 120
 const defaultSearchLimit = 20
 const defaultTagLimit = 20
-
-export const fredRequestsPerMinute = getPositiveIntegerEnv(
-  'FRED_REQUESTS_PER_MINUTE',
-  defaultFredRequestsPerMinute,
-)
 
 const waitForRequestSlot = createRateLimiter(fredRequestsPerMinute)
 

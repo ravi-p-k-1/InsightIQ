@@ -7,13 +7,3 @@ export function getRequiredEnv(name) {
 
   return value
 }
-
-export function getPositiveIntegerEnv(name, fallback) {
-  const value = Number(process.env[name] ?? fallback)
-
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error(`${name} must be a positive integer.`)
-  }
-
-  return value
-}

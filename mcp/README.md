@@ -85,9 +85,11 @@ to precede filtering `search_economic_series`/`get_economic_data` with
 ## Environment variables
 
 - `FRED_API_KEY` (required): your FRED API key.
-- `FRED_REQUESTS_PER_MINUTE` (optional): caps outgoing FRED request rate.
-  Defaults to 120, matching FRED's documented limit. All FRED calls from this
-  server (search, metadata, observations) share one rate limiter.
+
+All FRED calls from this server (search, metadata, observations) share one
+rate limiter capped at 120 requests/minute, matching FRED's documented limit
+— fixed, not user-configurable, since there's no reason to want a different
+value for FRED's own API.
 
 ## Error handling
 
@@ -114,7 +116,6 @@ Create `.env` from `.env.template`:
 
 ```bash
 FRED_API_KEY=your_fred_api_key_here
-FRED_REQUESTS_PER_MINUTE=120
 ```
 
 Run it directly to confirm it starts:

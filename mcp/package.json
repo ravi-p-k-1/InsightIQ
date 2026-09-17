@@ -1,6 +1,6 @@
 {
   "name": "insightiq-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for looking up real FRED (Federal Reserve Economic Data) series and their historical observations.",
   "type": "module",
   "license": "CC0-1.0",

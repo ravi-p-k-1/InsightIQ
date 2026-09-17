@@ -152,6 +152,22 @@ try {
       taggedData.series.length > 0 &&
       taggedData.series.every((series) => series.title.startsWith('Unemployment Rate in ')),
   )
+
+  const excludeTaggedResult = await client.callTool({
+    name: 'search_economic_series',
+    arguments: {
+      queries: ['unemployment rate'],
+      tags: ['usa', 'state'],
+      excludeTags: ['ca'],
+    },
+  })
+  const excludeTaggedData = !excludeTaggedResult.isError && parseToolJson(excludeTaggedResult)
+  check(
+    'search_economic_series excludeTags filter actually removes matching results (no California)',
+    !excludeTaggedResult.isError &&
+      excludeTaggedData.series.length > 0 &&
+      excludeTaggedData.series.every((series) => !series.title.includes('California')),
+  )
 } finally {
   await close()
 }
